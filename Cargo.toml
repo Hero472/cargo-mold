@@ -1,0 +1,23 @@
+[package]
+name = "cargo-mold"
+version = "0.1.0"
+edition = "2024"
+description = "NestJS-inspired code generator for Rust web applications"
+license = "MIT"
+authors = ["Pedro Herrera"]
+repository = "https://github.com/Hero472/cargo-mold"
+readme = "README.md"
+keywords = ["actix", "web", "scaffolding", "cli", "generator"]
+categories = ["command-line-utilities", "web-programming"]
+
+[[bin]]
+name = "cargo-mold"
+path = "src/main.rs"
+
+[dependencies]
+clap = { version = "4.4", features = ["derive"] }
+tokio = { version = "1.0", features = ["full"] }
+anyhow = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "2.0.17"
