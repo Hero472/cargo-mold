@@ -7,8 +7,15 @@ license = "MIT"
 authors = ["Pedro Herrera"]
 repository = "https://github.com/Hero472/cargo-mold"
 readme = "README.md"
-keywords = ["actix", "web", "scaffolding", "cli", "generator"]
-categories = ["command-line-utilities", "web-programming"]
+keywords = ["actix", "web", "scaffolding", "cli", "generator", "framework", "boilerplate"]
+categories = ["command-line-utilities", "web-programming", "development-tools"]
+exclude = [
+    ".env",
+    ".env.*",
+    "*.key",
+    "secrets/",
+    "config/local.toml",
+]
 
 [[bin]]
 name = "cargo-mold"
@@ -21,3 +28,13 @@ anyhow = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "2.0.17"
+bcrypt = "0.17.0"
+chrono = "0.4.42"
+jsonwebtoken = "9.3.1"
+base64 = "0.22.1"
+sha2 = "0.10.9"
+aes-gcm = "0.10"
+hex = "0.4.3"
+actix-web = "4.11.0"
+actix-service = "2.0"
+futures = "0.3"

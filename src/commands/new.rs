@@ -23,6 +23,8 @@ pub async fn execute(args: NewArgs) -> Result<()> {
     generate_handler_files(&args.project_name).await?;
     generate_server_files(&args.project_name).await?;
     generate_mod_files(&args.project_name).await?;
+    generate_env_example(&args.project_name).await?;
+    generate_cargo_mold_file(&args.project_name).await?;
 
     println!("✅ Project '{}' created successfully!", args.project_name);
     println!("📂 Next steps:");
@@ -43,8 +45,41 @@ async fn create_project_structure(project_name: &str) -> Result<()> {
     Ok(())
 }
 
+/// Generates .env-example file with example variables
+async fn generate_env_example(project_name: &str) -> Result<()> {
+    let content = format!(
+        r#"JWT_SECRET=this_should_be_your_ultra_secret_key_remember_to_change_in_production
+"#
+    );
+
+    let mut file = fs::File::create(format!("{}/.env-example", project_name)).await?;
+    file.write_all(content.as_bytes()).await?;
+    Ok(())
+}
+
+/// Generates .env-example file with example variables
+async fn generate_cargo_mold_file(project_name: &str) -> Result<()> {
+    let content = format!(
+        r#"Future changes will be done into this file
+I'm still thinking what info to write here and how to use it in the future
+"#
+    );
+
+    let mut file = fs::File::create(format!("{}/.cargo-mold", project_name)).await?;
+    file.write_all(content.as_bytes()).await?;
+    Ok(())
+}
+
 /// Generates the Cargo.toml file with necessary dependencies
 async fn generate_cargo_toml(project_name: &str) -> Result<()> {
+    let is_dev_mode = std::env::var("CARGO_MOLD_DEV").is_ok();
+    
+    let mold_dependency = if is_dev_mode {
+        r#"cargo-mold = { path = "../cargo-mold" }"#
+    } else {
+        r#"cargo-mold = "0.1.0""#
+    };
+
     let content = format!(
         r#"[package]
 name = "{}"
@@ -52,6 +87,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+{}
 actix-web = "4.4"
 tokio = {{ version = "1.0", features = ["full"] }}
 serde = {{ version = "1.0", features = ["derive"] }}
@@ -61,7 +97,7 @@ serde_json = "1.0"
 name = "{}"
 path = "src/lib.rs"
 "#, 
-        project_name, project_name
+        project_name, mold_dependency, project_name.replace("-", "_")
     );
 
     let mut file = fs::File::create(format!("{}/Cargo.toml", project_name)).await?;
@@ -107,6 +143,7 @@ async fn generate_route_files(project_name: &str) -> Result<()> {
     let routes_file = r#"// Route configuration module
 // Defines all public API routes and their handlers
 use actix_web::web;
+use cargo_mold::auth::JwtMiddleware;
 
 use crate::handlers::handlers;
 
@@ -115,6 +152,20 @@ pub fn public_routes(cfg: &mut web::ServiceConfig) {
     cfg.service(
         web::scope("/api")
             .route("/hello", web::get().to(handlers::hello))
+    );
+}
+
+/// Configures all private routes for the application
+pub fn private_routes(cfg: &mut web::ServiceConfig) {
+
+    let jwt_secret = std::env::var("JWT_SECRET")
+        .expect("JWT_SECRET must be set in environment");
+    let jwt_middleware = JwtMiddleware::new(jwt_secret);
+
+    cfg.service(
+        web::scope("/private-api")
+            .wrap(jwt_middleware)
+            .route("/", web::get().to(handlers::hello))
     );
 }"#;
 

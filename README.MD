@@ -1,4 +1,3 @@
-```markdown
 # Actix Web Project Generator
 
 A powerful CLI tool for quickly scaffolding new Actix Web projects with production-ready structure and best practices.
@@ -6,6 +5,20 @@ A powerful CLI tool for quickly scaffolding new Actix Web projects with producti
 ## 🎯 Our Vision
 
 This tool aims to become the **NestJS of the Rust world** - a comprehensive framework and CLI for building efficient, scalable, and maintainable backend systems with Rust. We're building more than just a project generator; we're creating a complete ecosystem for backend development.
+
+## ⚡ Why cargo-mold?
+
+### Before cargo-mold:
+- ❌ Spend hours setting up project structure
+- ❌ Manually configure routes, handlers, modules
+- ❌ Research best practices for Actix Web
+- ❌ Write boilerplate code
+
+### After cargo-mold:
+- ✅ `cargo mold new my-app` - done in seconds
+- ✅ Production-ready structure out of the box
+- ✅ Follows Rust & Actix best practices
+- ✅ Focus on your business logic, not setup
 
 ## 🚀 The Roadmap
 
@@ -73,6 +86,8 @@ my-project/
     │   ├── mod.rs
     │   └── server.rs
     ├── models/
+    │   ├── mod.rs
+    │   └── models.rs
     ├── utils/
 ```
 
@@ -102,4 +117,3 @@ cargo run
 ## License
 
 MIT
-```

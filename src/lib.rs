@@ -1,3 +1,4 @@
 pub mod commands;
-pub mod generators;
 pub mod templates;
+pub mod auth;
+pub mod utils;
