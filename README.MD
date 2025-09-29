@@ -57,6 +57,10 @@ cargo install cargo-mold
 # Create a new Actix Web project
 cargo-mold new my-awesome-project
 
+# Generate a CRUD resource (users, products, etc.)
+cargo-mold generate resource users
+cargo-mold g resource users
+
 # See all available commands
 cargo-mold --help
 ```
@@ -67,28 +71,36 @@ cargo-mold --help
 - 📁 **Production Structure** - Organized module layout following best practices
 - ⚡ **Ready to Code** - Pre-configured with common dependencies and routes
 - 🛠️ **Extensible** - Easy to customize and extend generated projects
+- 🔐 **JWT Authentication** - Built-in auth system with middleware
+- 🔧 **Resource Generation** - Scaffold complete CRUD APIs
 
 ## Generated Project Structure
 
 ```
 my-project/
 ├── Cargo.toml
+├── .cargo-mold
+├── .env.example
 └── src/
     ├── main.rs
     ├── lib.rs
     ├── routes/
     │   ├── mod.rs
-    │   └── routes.rs
+    │   ├── routes.rs
+    │   └── user_routes.rs        # Generated with resource command
     ├── handlers/
     │   ├── mod.rs
-    │   └── handlers.rs
+    │   ├── handlers.rs
+    │   └── user_handlers.rs      # Generated with resource command
+    ├── models/
+    │   ├── mod.rs
+    │   ├── models.rs
+    │   └── user.rs               # Generated with resource command
     ├── server/
     │   ├── mod.rs
     │   └── server.rs
-    ├── models/
-    │   ├── mod.rs
-    │   └── models.rs
-    ├── utils/
+    └── utils/
+        └── mod.rs
 ```
 
 ## Quick Start
@@ -104,15 +116,67 @@ cd my-web-app
 cargo run
 
 # Visit http://127.0.0.1:8080/api/hello to see it working!
+
+```
+## Resource Generation
+
+Create complete CRUD APIs in seconds:
+
+```bash
+# Generate a users resource with full CRUD operations
+cargo mold generate resource users
+
+# This creates:
+# - Model (src/models/user.rs)
+# - Handlers (src/handlers/user_handlers.rs)  
+# - Routes (src/routes/user_routes.rs)
+# - Automatic route registration
+
+# Available endpoints:
+# GET    /api/users
+# POST   /api/users
+# GET    /api/users/{id}
+# PUT    /api/users/{id}
+# DELETE /api/users/{id}
+```
+
+## JWT Authentication
+
+Built-in authentication system:
+
+```rust
+use cargo_mold::auth::AuthService;
+use cargo_mold::jwt::JwtMiddleware;
+
+// Create auth service
+let auth_service = AuthService::new("secret".to_string());
+
+// Create JWT middleware
+let jwt_middleware = JwtMiddleware::new("secret".to_string());
+
+// Use in Actix Web app
+App::new()
+    .wrap(jwt_middleware)
+    .route("/protected", web::get().to(protected_handler))
 ```
 
 ## What's Included
 
 - **Actix Web 4.4** with Tokio runtime
 - **Structured modules** for routes, handlers, and server configuration
-- **Example routes** and handlers to get started quickly
-- **Proper error handling** with anyhow
+- **JWT Authentication** with middleware protection
+- **Resource Generation** for rapid CRUD API development
+- **Environment-based configuration** with dotenvy
 - **JSON response** examples
+- **Production-ready project structure**
+
+## Join the Journey
+
+This is just the beginning! We're building a comprehensive backend framework that combines Rust's performance with developer experience excellence. Your feedback and contributions will help shape the future of backend development in Rust.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md) for what's new in each version.
 
 ## License
 
