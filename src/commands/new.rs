@@ -77,7 +77,7 @@ async fn generate_cargo_toml(project_name: &str) -> Result<()> {
     let mold_dependency = if is_dev_mode {
         r#"cargo-mold = { path = "../cargo-mold" }"#
     } else {
-        r#"cargo-mold = "0.1.0""#
+        r#"cargo-mold = "0.2.1""#
     };
 
     let content = format!(
