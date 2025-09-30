@@ -47,10 +47,16 @@ async fn create_project_structure(project_name: &str) -> Result<()> {
 
 /// Generates .env-example file with example variables
 async fn generate_env_example(project_name: &str) -> Result<()> {
-    let content = format!(
-        r#"JWT_SECRET=this_should_be_your_ultra_secret_key_remember_to_change_in_production
-"#
-    );
+    let content = r#"# Environment Configuration
+# Copy this file to '.env' and update the values with your actual configuration
+
+# ==========================================
+# JWT Authentication
+# ==========================================
+# Secret key for signing JWT tokens
+# Generate a secure random key: openssl rand -base64 64
+JWT_SECRET=your-super-secure-jwt-secret-key-change-this-in-production
+"#;
 
     let mut file = fs::File::create(format!("{}/.env-example", project_name)).await?;
     file.write_all(content.as_bytes()).await?;
@@ -72,13 +78,8 @@ I'm still thinking what info to write here and how to use it in the future
 
 /// Generates the Cargo.toml file with necessary dependencies
 async fn generate_cargo_toml(project_name: &str) -> Result<()> {
-    let is_dev_mode = std::env::var("CARGO_MOLD_DEV").is_ok();
     
-    let mold_dependency = if is_dev_mode {
-        r#"cargo-mold = { path = "../cargo-mold" }"#
-    } else {
-        r#"cargo-mold = "0.2.1""#
-    };
+    let mold_version = r#"cargo-mold = 0.2.1"#;
 
     let content = format!(
         r#"[package]
@@ -97,7 +98,7 @@ serde_json = "1.0"
 name = "{}"
 path = "src/lib.rs"
 "#, 
-        project_name, mold_dependency, project_name.replace("-", "_")
+        project_name, mold_version, project_name.replace("-", "_")
     );
 
     let mut file = fs::File::create(format!("{}/Cargo.toml", project_name)).await?;
