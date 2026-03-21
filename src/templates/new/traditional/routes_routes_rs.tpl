@@ -1,7 +1,7 @@
 // Route configuration module
 // Defines all public API routes and their handlers
 use actix_web::web;
-use cargo_mold::auth::JwtMiddleware;
+use cargo_smith::auth::JwtMiddleware;
 
 use crate::handlers::handlers;
 

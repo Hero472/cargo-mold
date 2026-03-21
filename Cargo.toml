@@ -1,6 +1,6 @@
 [package]
 name = "cargo-smith"
-version = "0.3.1"
+version = "0.3.2"
 edition = "2024"
 description = "NestJS-inspired code generator for Rust web applications"
 license = "MIT"
