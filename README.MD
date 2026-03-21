@@ -48,21 +48,20 @@ This tool aims to become the **NestJS of the Rust world** - a comprehensive fram
 ## Installation
 
 ```bash
-cargo install cargo-mold
+cargo install cargo-smith
 ```
 
 ## Usage
 
 ```bash
 # Create a new Actix Web project
-cargo-mold new my-awesome-project
+cargo-smith new
 
-# Generate a CRUD resource (users, products, etc.)
-cargo-mold generate resource users
-cargo-mold g resource users
+cargo-smith generate resource users
+cargo-smith g resource users
 
 # See all available commands
-cargo-mold --help
+cargo-smith --help
 ```
 
 ## Features
@@ -79,7 +78,7 @@ cargo-mold --help
 ```
 my-project/
 ├── Cargo.toml
-├── .cargo-mold
+├── .cargo-smith
 ├── .env.example
 └── src/
     ├── main.rs
@@ -107,10 +106,10 @@ my-project/
 
 ```bash
 # Generate a new project
-cargo-mold new my-web-app
+cargo-smith new
 
 # Navigate to your new project
-cd my-web-app
+cd my-app
 
 # Run the server
 cargo run
@@ -145,8 +144,8 @@ cargo mold generate resource users
 Built-in authentication system:
 
 ```rust
-use cargo_mold::auth::AuthService;
-use cargo_mold::jwt::JwtMiddleware;
+use cargo_smith::auth::AuthService;
+use cargo_smith::jwt::JwtMiddleware;
 
 // Create auth service
 let auth_service = AuthService::new("secret".to_string());
@@ -177,7 +176,3 @@ This is just the beginning! We're building a comprehensive backend framework tha
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for what's new in each version.
-
-## License
-
-MIT
