@@ -101,10 +101,10 @@ where
             Err(err) => {
                 let msg = match err.kind() {
                     jsonwebtoken::errors::ErrorKind::ExpiredSignature  => "token expired",
-                    jsonwebtoken::errors::ErrorKind::InvalidToken      => "invalid token",
-                    jsonwebtoken::errors::ErrorKind::InvalidSignature  => "invalid token signature",
+                    jsonwebtoken::errors::ErrorKind::InvalidToken => "invalid token",
+                    jsonwebtoken::errors::ErrorKind::InvalidSignature => "invalid token signature",
                     jsonwebtoken::errors::ErrorKind::ImmatureSignature => "token not yet valid",
-                    _                                                  => "invalid token",
+                    _  => "invalid token",
                 };
                 Box::pin(async move {
                     Err(actix_web::error::ErrorUnauthorized(msg))

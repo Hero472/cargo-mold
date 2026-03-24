@@ -6,16 +6,16 @@ A powerful CLI tool for quickly scaffolding new Actix Web projects with producti
 
 This tool aims to become the **NestJS of the Rust world** - a comprehensive framework and CLI for building efficient, scalable, and maintainable backend systems with Rust. We're building more than just a project generator; we're creating a complete ecosystem for backend development.
 
-## Why cargo-mold?
+## Why cargo-smith?
 
-### Before cargo-mold:
+### Before cargo-smith:
 - Spend hours setting up project structure
 - Manually configure routes, handlers, modules
 - Research best practices for Actix Web
 - Write boilerplate code
 
-### After cargo-mold:
-- `cargo-mold new my-app` - done in seconds
+### After cargo-smith:
+- `cargo-smith new my-app` - done in seconds
 - Production-ready structure out of the box
 - Follows Rust & Actix best practices
 - Focus on your business logic, not setup
@@ -123,7 +123,9 @@ Create complete CRUD APIs in seconds:
 
 ```bash
 # Generate a users resource with full CRUD operations
-cargo mold generate resource users
+cargo-smith generate resource users
+or
+cargo-smith g resource users
 
 # This creates:
 # - Model (src/models/user.rs)
