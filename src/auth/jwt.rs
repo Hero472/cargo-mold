@@ -106,19 +106,13 @@ where
                 return Box::pin(service.call(req))
             },
             Err(err) => {
-                let error_msg = match err.kind() {
-                    jsonwebtoken::errors::ErrorKind::ExpiredSignature => "Token expired",
-                    jsonwebtoken::errors::ErrorKind::InvalidToken => "Invalid token",
-                    jsonwebtoken::errors::ErrorKind::InvalidSignature => "Invalid token signature",
-                    jsonwebtoken::errors::ErrorKind::InvalidEcdsaKey => "Invalid key",
-                    jsonwebtoken::errors::ErrorKind::InvalidAlgorithm => "Invalid algorithm",
-                    jsonwebtoken::errors::ErrorKind::InvalidIssuer => "Invalid issuer",
-                    jsonwebtoken::errors::ErrorKind::InvalidAudience => "Invalid audience",
-                    jsonwebtoken::errors::ErrorKind::InvalidSubject => "Invalid subject",
-                    jsonwebtoken::errors::ErrorKind::ImmatureSignature => "Token not yet valid",
-                    _ => "Invalid token", // Handles malformed_jwt_structure and other cases
+                let msg = match err.kind() {
+                    jsonwebtoken::errors::ErrorKind::ExpiredSignature  => "token expired",
+                    jsonwebtoken::errors::ErrorKind::InvalidToken => "invalid token",
+                    jsonwebtoken::errors::ErrorKind::InvalidSignature => "invalid token signature",
+                    jsonwebtoken::errors::ErrorKind::ImmatureSignature => "token not yet valid",
+                    _  => "invalid token",
                 };
-
                 Box::pin(async move {
                     Err(actix_web::error::ErrorUnauthorized(error_msg))
                 })
