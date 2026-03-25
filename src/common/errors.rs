@@ -1,6 +1,7 @@
 use actix_web::{HttpResponse, ResponseError, http::StatusCode};
-use serde_json::json;
 use std::fmt;
+
+use crate::common::response::ApiResponse;
 
 #[derive(Debug)]
 pub enum AppError {
@@ -15,12 +16,12 @@ pub enum AppError {
 impl fmt::Display for AppError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Unauthorized(msg)  => write!(f, "{}", msg),
-            Self::Forbidden(msg)     => write!(f, "{}", msg),
-            Self::NotFound(msg)      => write!(f, "{}", msg),
-            Self::BadRequest(msg)    => write!(f, "{}", msg),
-            Self::Internal(msg)      => write!(f, "{}", msg),
-            Self::Database(e)        => write!(f, "database error: {}", e),
+            Self::Unauthorized(msg) => write!(f, "{}", msg),
+            Self::Forbidden(msg) => write!(f, "{}", msg),
+            Self::NotFound(msg) => write!(f, "{}", msg),
+            Self::BadRequest(msg) => write!(f, "{}", msg),
+            Self::Internal(msg) => write!(f, "{}", msg),
+            Self::Database(e) => write!(f, "database error: {}", e),
         }
     }
 }
@@ -38,18 +39,12 @@ impl ResponseError for AppError {
     }
 
     fn error_response(&self) -> HttpResponse {
-        let (status, message) = match self {
-            Self::Unauthorized(msg)  => (401, msg.to_string()),
-            Self::Forbidden(msg)     => (403, msg.to_string()),
-            Self::NotFound(msg)      => (404, msg.clone()),
-            Self::BadRequest(msg)    => (400, msg.clone()),
-            Self::Internal(msg)      => (500, msg.clone()),
-            Self::Database(_)        => (500, "database error".into()),
-        };
-        HttpResponse::build(
-            actix_web::http::StatusCode::from_u16(status).unwrap()
-        )
-        .json(json!({ "error": message, "statusCode": status }))
+        
+        let status = self.status_code();
+
+        let body = ApiResponse::<()>::message(status, self.to_string());
+        
+        HttpResponse::build(status).json(body)
     }
 }
 
