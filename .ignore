@@ -1,7 +1,0 @@
-.env
-.env.example
-.env.local
-*.key
-*.pem
-secrets/
-config/local/
