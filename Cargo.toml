@@ -1,6 +1,6 @@
 [package]
 name = "cargo-smith"
-version = "0.3.0"
+version = "0.3.2"
 edition = "2024"
 description = "NestJS-inspired code generator for Rust web applications"
 license = "MIT"
@@ -28,24 +28,24 @@ name = "cargo-smith"
 path = "src/main.rs"
 
 [dependencies]
-clap = { version = "4.4", features = ["derive"] }
-tokio = { version = "1.0", features = ["full"] }
-anyhow = "1.0"
+clap = { version = "4.6", features = ["derive"] }
+tokio = { version = "1.50", features = ["full"] }
+anyhow = "1.0.102"
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-thiserror = "2.0.17"
-bcrypt = "0.17.0"
-chrono = "0.4.42"
+serde_json = "1.0.149"
+thiserror = "2.0.18"
+bcrypt = "0.19.0"
+chrono = "0.4.44"
 jsonwebtoken = "9.3.1"
 base64 = "0.22.1"
 sha2 = "0.10.9"
 aes-gcm = "0.10"
 hex = "0.4.3"
-actix-web = "4.11.0"
+actix-web = "4.13.0"
 actix-service = "2.0"
-futures = "0.3"
+futures = "0.3.32"
 async-trait = "0.1.89"
-toml = "0.9.7"
+toml = "0.9.8"
 dialoguer = "0.12.0"
 url = "2.5.8"
 mongodb = "3.5.2"

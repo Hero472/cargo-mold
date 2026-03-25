@@ -6,3 +6,10 @@
 *.pem
 secrets/
 config/local/
+
+.vscode/
+.idea/
+*.swp
+*.swo
+
+Cargo.lock

@@ -1,5 +1,6 @@
 use std::error::Error;
 use serde::{Serialize, Deserialize};
+use serde_json::json;
 use sha2::{digest::generic_array::GenericArray, Digest, Sha256};
 use base64::Engine;
 use aes_gcm::{aead::{Aead, OsRng}, AeadCore, Aes256Gcm, KeyInit, Nonce};
@@ -132,5 +133,34 @@ impl AuthService {
         
         String::from_utf8(plaintext)
             .map_err(|e| format!("Invalid UTF-8: {}", e).into())
+    }
+
+    pub fn token_pair(&self, id: &str, username: &str) -> (String, String) {
+        let access  = self.generate_token(
+            id.to_string(),
+            serde_json::json!({ "username": username, "kind": "registered" }),
+            15,             // 15 minutes
+        );
+        let refresh = self.generate_token(
+            id.to_string(),
+            serde_json::json!({ "username": username, "type": "refresh" }),
+            60 * 24 * 7,   // 7 days
+        );
+        (access, refresh)
+    }
+
+    /// Guest pair — shorter refresh since guests are ephemeral
+    pub fn guest_token_pair(&self, id: &str, username: &str) -> (String, String) {
+        let access  = self.generate_token(
+            id.to_string(),
+            serde_json::json!({ "username": username, "kind": "guest" }),
+            15 * 24,
+        );
+        let refresh = self.generate_token(
+            id.to_string(),
+            serde_json::json!({ "username": username, "kind": "guest", "type": "refresh" }),
+            60 * 24,             // 1 hour
+        );
+        (access, refresh)
     }
 }

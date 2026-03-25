@@ -5,14 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.3.0] - 2025-12-2
+## [0.3.2] - 2026-03-21
 
-### Features
+### Fixed
+- Fixed some template versions and names from `cargo_mold` to `cargo_smith` (Dumb fix) 
+
+## [0.3.1] - 2026-03-21
+
+### Fixed
+- Fixed the `README.MD` to match actual development direction
+
+## Changed
+- Updated dependencies
+
+## [0.3.0] - 2025-12-02
+
+### Added
 - **New template system**: Completely rewrote codebase to support modular, file-based templates
 - **Template engine**: New engine handles variable substitution and file generation
 - **Future-ready**: Architecture now supports multiple template types
+- **NestJS-style project generation**: Added a new feature that lets you generate a project using a NestJS-like modular design
 
-### Refactor
+### Changed
 - **Code organization**: Separated all template content from Rust code and utils folder is now a file
 - **Maintainability**: Templates can now be edited without recompiling the binary
 

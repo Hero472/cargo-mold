@@ -1,4 +1,4 @@
-use actix_web::dev::{ServiceRequest, ServiceResponse};
+use actix_web::{HttpMessage, dev::{ServiceRequest, ServiceResponse}};
 use std::{rc::Rc, task::{Context, Poll}};
 use actix_web::Error;
 use actix_service::{Service, Transform};
@@ -59,52 +59,45 @@ where
 
     fn call(&self, req: ServiceRequest) -> Self::Future {
         let service = Rc::clone(&self.service);
-        
-        let auth_header = match req.headers().get("Authorization") {
-            Some(header) => header,
-            None => {
-                return Box::pin(async {
-                    Err(actix_web::error::ErrorUnauthorized("Authorization header missing"))
-                })
-            }
+        let secret_key = self.secret_key.clone();
+
+        // 1. Try Authorization: Bearer header first
+        let token = req
+            .headers()
+            .get("Authorization")
+            .and_then(|v| v.to_str().ok())
+            .and_then(|v| v.strip_prefix("Bearer "))
+            .map(|t| t.to_string());
+
+        // 2. Fall back to ?token= query param (needed for WebSocket upgrades)
+        let token = token.or_else(|| {
+            url::form_urlencoded::parse(req.query_string().as_bytes())
+                .find(|(k, _)| k == "token")
+                .map(|(_, v)| v.into_owned())
+        });
+
+        let token = match token {
+            Some(t) if !t.is_empty() => t,
+            _ => return Box::pin(async {
+                Err(actix_web::error::ErrorUnauthorized("missing token"))
+            }),
         };
-
-        let auth_str = match auth_header.to_str() {
-            Ok(str) => str,
-            Err(_) => {
-                return Box::pin(async {
-                    Err(actix_web::error::ErrorUnauthorized("Invalid Authorization header encoding"))
-                })
-            }
-        };
-
-        if !auth_str.starts_with("Bearer ") {
-            return Box::pin(async {
-                Err(actix_web::error::ErrorUnauthorized("Authorization header must start with 'Bearer '"))
-            })
-        }
-
-        let token = &auth_str[7..];
-
-        if token.is_empty() {
-            return Box::pin(async {
-                Err(actix_web::error::ErrorUnauthorized("Empty token"))
-            });
-        }
 
         let mut validation = Validation::new(Algorithm::HS256);
         validation.validate_exp = true;
 
-        let token_data = decode::<Claims<serde_json::Value>>( // Concrete type
-                token,
-                &DecodingKey::from_secret(self.secret_key.as_bytes()),
-                &validation
-            );
+        let token_data = decode::<Claims<serde_json::Value>>(
+            &token,
+            &DecodingKey::from_secret(secret_key.as_bytes()),
+            &validation,
+        );
 
         match token_data {
-            Ok(_data) => {
-                return Box::pin(service.call(req))
-            },
+            Ok(data) => {
+                // Inject claims into request extensions so handlers can extract them
+                req.extensions_mut().insert(data.claims);
+                Box::pin(service.call(req))
+            }
             Err(err) => {
                 let msg = match err.kind() {
                     jsonwebtoken::errors::ErrorKind::ExpiredSignature  => "token expired",
@@ -114,7 +107,7 @@ where
                     _  => "invalid token",
                 };
                 Box::pin(async move {
-                    Err(actix_web::error::ErrorUnauthorized(error_msg))
+                    Err(actix_web::error::ErrorUnauthorized(msg))
                 })
             }
         }
