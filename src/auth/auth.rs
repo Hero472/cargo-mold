@@ -1,6 +1,5 @@
 use std::error::Error;
 use serde::{Serialize, Deserialize};
-use serde_json::json;
 use sha2::{digest::generic_array::GenericArray, Digest, Sha256};
 use base64::Engine;
 use aes_gcm::{aead::{Aead, OsRng}, AeadCore, Aes256Gcm, KeyInit, Nonce};

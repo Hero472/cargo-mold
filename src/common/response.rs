@@ -1,6 +1,5 @@
 use serde::Serialize;
 use actix_web::{HttpRequest, HttpResponse, Responder, body::BoxBody, http::StatusCode};
-use serde_json::json;
 
 #[derive(Serialize)]
 pub struct ApiResponse<T: Serialize = ()> {
@@ -39,6 +38,28 @@ impl<T: Serialize> ApiResponse<T> {
     }
 }
 
+impl ApiResponse<()> {
+    pub fn success(message: impl Into<String>) -> Self {
+        Self {
+            status_code: 200,
+            message: message.into(),
+            data: None,
+        }
+    }
+
+    pub fn err(status: StatusCode, message: impl Into<String>) -> Self {
+        Self {
+            status_code: status.as_u16(),
+            message: message.into(),
+            data: None,
+        }
+    }
+
+    pub fn not_found(message: impl Into<String>) -> Self {
+        Self::err(StatusCode::NOT_FOUND, message)
+    }
+}
+
 impl<T: Serialize> Responder for ApiResponse<T> {
     type Body = BoxBody;
 
@@ -47,25 +68,5 @@ impl<T: Serialize> Responder for ApiResponse<T> {
             .unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
         
         HttpResponse::build(status).json(self)
-    }
-}
-
-pub struct ApiMessage;
-
-impl ApiMessage {
-    pub fn ok(message: impl Into<String>) -> HttpResponse {
-        HttpResponse::Ok().json(json!({
-            "status_code": 200,
-            "message": message.into(),
-            "data": null
-        }))
-    }
-
-    pub fn not_found(message: impl Into<String>) -> HttpResponse {
-        HttpResponse::NotFound().json(json!({
-            "status_code": 404,
-            "message": message.into(),
-            "data": null
-        }))
     }
 }
