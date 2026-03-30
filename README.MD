@@ -1,49 +1,22 @@
-# Actix Web Project Generator
+# cargo-smith
 
-A powerful CLI tool for quickly scaffolding new Actix Web projects with production-ready structure and best practices.
+A high-performance CLI tool for scaffolding Modular Rust & Actix Web applications.
 
-## Our Vision
+Inspired by the scalability of NestJS, built with the power of Rust.
 
-This tool aims to become the **NestJS of the Rust world** - a comprehensive framework and CLI for building efficient, scalable, and maintainable backend systems with Rust. We're building more than just a project generator; we're creating a complete ecosystem for backend development.
+## The modular Vision
+
+`cargo-smith` is transitioning to a `Feature-First` architecture. Instead of flat folders for all controllers or models, we organize code by `Domain Features`. This ensures your project stays maintainable as it grows from a microservice to an enterprise system.
 
 ## Why cargo-smith?
 
-### Before cargo-smith:
-- Spend hours setting up project structure
-- Manually configure routes, handlers, modules
-- Research best practices for Actix Web
-- Write boilerplate code
+- Modular by Design: Automatically registers new features in a central registry.
 
-### After cargo-smith:
-- `cargo-smith new my-app` - done in seconds
-- Production-ready structure out of the box
-- Follows Rust & Actix best practices
-- Focus on your business logic, not setup
+- Zero-Boilerplate: Generate a feature with Controller, Service, Model, and Routes in one command.
 
-## The Roadmap
+- Developer Experience: Automated Actix-Web ServiceConfig injection—no more manual route imports.
 
-### Phase 1: Project Scaffolding
-- Basic Actix Web project generation
-- Standardized project structure
-- Essential dependencies and configuration
-
-### Phase 2: Advanced Generators
-- **Resource Generation**: CRUD endpoints, models, handlers
-- **Database Integration**: Diesel, SQLx setup with migrations
-- **Authentication**: JWT, OAuth2 boilerplate
-- **API Documentation**: OpenAPI/Swagger integration
-
-### Phase 3: Framework Features
-- **Dependency Injection**: Type-safe DI system
-- **Modules & Providers**: Organized application architecture
-- **Middleware System**: Custom middleware generation
-- **Configuration Management**: Environment-based configs
-
-### Phase 4: Enterprise Ready
-- **Microservices**: Inter-service communication
-- **Testing Suite**: Unit, integration, e2e testing setup
-- **Deployment**: Docker, Kubernetes configurations
-- **Monitoring**: Logging, metrics, health checks
+- Optimized: Designed for Rust-level performance and clean binary footprints.
 
 ## Installation
 
@@ -53,70 +26,53 @@ cargo install cargo-smith
 
 ## Usage
 
+### 1. Create a New Project
+
 ```bash
 # Create a new Actix Web project
 cargo-smith new
-
-cargo-smith generate resource users
-cargo-smith g resource users
 
 # See all available commands
 cargo-smith --help
 ```
 
-## Features
+This generates a project with the `Modular` template, including a `.cargo-smith` configuration file to track your project state.
 
-- **Quick Setup** - Generate complete Actix Web projects in seconds
-- **Production Structure** - Organized module layout following best practices
-- **Ready to Code** - Pre-configured with common dependencies and routes
-- **Extensible** - Easy to customize and extend generated projects
-- **JWT Authentication** - Built-in auth system with middleware
-- **Resource Generation** - Scaffold complete CRUD APIs
+### 2. Generate a New Feature
+
+```bash
+# Adds a 'users' module with full boilerplate
+cargo-smith feature users
+```
 
 ## Generated Project Structure
 
 ```
 my-project/
-├── Cargo.toml
-├── .cargo-smith
-├── .env.example
-└── src/
-    ├── main.rs
-    ├── lib.rs
-    ├── routes/
-    │   ├── mod.rs
-    │   ├── routes.rs
-    │   └── user_routes.rs        # Generated with resource command
-    ├── handlers/
-    │   ├── mod.rs
-    │   ├── handlers.rs
-    │   └── user_handlers.rs      # Generated with resource command
-    ├── models/
-    │   ├── mod.rs
-    │   ├── models.rs
-    │   └── user.rs               # Generated with resource command
-    ├── server/
-    │   ├── mod.rs
-    │   └── server.rs
-    └── utils/
-        └── mod.rs
+├── .cargo-smith           # Project metadata and feature registry
+├── src/
+│   ├── main.rs            # Entry point
+│   ├── lib.rs             # Library root
+│   ├── server/            # Server configuration
+│   │   ├── server.rs      # Server start
+│   ├── utils/             # Shared utilities
+│   └── features/          # Domain Logic (The Core)
+│       ├── mod.rs         # Central Registry [SMITH-MOD]
+│       └── users/         # Generated Feature
+│           ├── mod.rs     # Feature Entry & Init
+│           ├── controller.rs
+│           ├── service.rs
+│           ├── model.rs
+│           └── routes.rs
 ```
 
-## Quick Start
+## The Roadmap
 
-```bash
-# Generate a new project
-cargo-smith new
+[x] Modular Template: Feature-based organization
+[x] Automatic Registration: Smart code injection into `features/mod.rs`
+[] CRUD Generation: Instant database integration for features
+[] Routing Framework: Advanced macro-based routing for cleaner controllers
 
-# Navigate to your new project
-cd my-app
-
-# Run the server
-cargo run
-
-# Visit http://127.0.0.1:8080/api/hello to see it working!
-
-```
 ## Resource Generation
 
 Create complete CRUD APIs in seconds:

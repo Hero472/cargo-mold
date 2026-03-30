@@ -1,9 +1,10 @@
 use clap::Args;
-use anyhow::{Context, Result, bail};
+use anyhow::{Result, bail};
 use std::path::Path;
 use tokio::fs;
+use anyhow::Context;
 
-use crate::templates::{TemplateType, contents::modular, template_engine::TemplateEngine, types::CargoSmith};
+use crate::templates::{TemplateType, types::CargoSmith};
 
 #[derive(Args)]
 pub struct FeatureArgs {
@@ -11,123 +12,37 @@ pub struct FeatureArgs {
     pub name: String,
 }
 
-pub async fn execute(args: FeatureArgs) -> anyhow::Result<()> {
-
+pub async fn execute(args: FeatureArgs) -> Result<()> {
     let config_path = ".cargo-smith";
-
-    if !Path::new(".cargo-smith").exists() {
-        bail!(
-            "Not a cargo-smith project. Run this in a project created with `cargo-smith new`."
-        );
+    
+    // 1. Load Config
+    if !Path::new(config_path).exists() {
+        bail!("Not a cargo-smith project. Run `cargo-smith new` first.");
     }
-
     let config_content = fs::read_to_string(config_path).await?;
+    let mut config: CargoSmith = toml::from_str(&config_content)?;
 
-    let config: CargoSmith = toml::from_str(&config_content)
-        .context("Failed to parse .cargo-smith config")?;
-
+    // 2. Check if feature exists in config
     let feature_name = args.name.to_lowercase();
-
     if config.generated.features.contains(&feature_name) {
-        bail!("Feature '{}' is already registered in .cargo-smith", feature_name);
+        bail!("Feature '{}' already exists in .cargo-smith", feature_name);
     }
 
-    let base_path = format!("src/features/{}/", feature_name);
-    if Path::new(&base_path).exists() {
-        bail!("Folder '{}' already exists, but isn't in .cargo-smith. Manual cleanup required.", base_path);
-    }
+    let template_str = config.metadata.template.clone();
 
-    println!("Generating feature: {}", feature_name);
-    fs::create_dir_all(&base_path).await?;
+    let template_type = template_str.parse()
+        .context(format!("Failed to parse template type: {}", template_str))?;
 
-    let files = [
-        (format!("{}/mod.rs", base_path), modular::feature::MOD),
-        (format!("{}/controller.rs", base_path), modular::feature::CONTROLLER),
-        (format!("{}/service.rs", base_path), modular::feature::SERVICE),
-        (format!("{}/model.rs", base_path), modular::feature::MODEL),
-        (format!("{}/routes.rs", base_path), modular::feature::ROUTES),
-    ];
+    TemplateType::create(&template_type)
+        .add_feature(&feature_name)
+        .await?;
 
-    for (path, content) in files {
-        // Here we pass the feature_name so the engine can replace {{name}} in the templates
-        TemplateEngine::generate_from_template(
-            &feature_name, 
-            &path,
-            content,
-            &TemplateType::Modular,
-            false
-        ).await?;
-    }
+    config.generated.features.push(feature_name);
+    fs::write(config_path, toml::to_string_pretty(&config)?).await?;
 
-    update_resource_cargo_smith(feature_name.clone()).await?;
-
-    register_in_parent_mod(&feature_name).await?;
-    
-    println!("Resource '{}' created successfully!", feature_name);
-    println!("Generated files:");
-    println!("   - src/{}", feature_name);
-    println!("   - src/{}/mod.rs", feature_name);
-    println!("   - src/{}/model.rs", feature_name);
-    println!("   - src/{}/controller.rs", feature_name);
-    println!("   - src/{}/service.rs", feature_name);
-    println!("   - src/{}/routes.rs", feature_name);
-
+    println!("Feature created and registered successfully!");
     Ok(())
 }
 
-async fn update_resource_cargo_smith(name: String) -> Result<()> {
-    
-    let content = fs::read_to_string(".cargo-smith").await?;
-
-    let mut config: CargoSmith = toml::from_str(&content)?;
-
-    if !config.generated.features.contains(&name) {
-        config.generated.features.push(name);
-        let updated_content = toml::to_string_pretty(&config)?;
-        fs::write(".cargo-smith", updated_content).await?;
-    }
-    Ok(())
-}
-
-async fn register_in_parent_mod(name: &str) -> anyhow::Result<()> {
-    let mod_file = "src/features/mod.rs";
-    let mod_path = std::path::Path::new(mod_file);
-
-    // 1. Get current content or use a default template if empty/missing
-    let mut content = if mod_path.exists() {
-        tokio::fs::read_to_string(mod_file).await?
-    } else {
-        String::new()
-    };
-
-    // 2. "Upgrade" the file if it's the old simple version or empty
-    if !content.contains("// [SMITH-MOD]") {
-        content = format!(
-            "use actix_web::web;\n\n// [SMITH-MOD]\n\npub fn init(cfg: &mut web::ServiceConfig) {{\n    // [SMITH-INIT]\n}}\n"
-        );
-    }
-
-    let mod_declaration = format!("pub mod {};", name);
-    let init_call = format!("    {}::init(cfg);", name);
-
-    // 3. Inject 'pub mod' declaration
-    if !content.contains(&mod_declaration) {
-        content = content.replace(
-            "// [SMITH-MOD]",
-            &format!("// [SMITH-MOD]\n{}", mod_declaration)
-        );
-    }
-
-    // 4. Inject 'init' call
-    if !content.contains(&init_call) {
-        content = content.replace(
-            "// [SMITH-INIT]",
-            &format!("// [SMITH-INIT]\n{}", init_call)
-        );
-    }
-
-    tokio::fs::write(mod_file, content).await?;
-    Ok(())
-}
 
 // Someday I will do some routing framework os something to make it really well and useful
