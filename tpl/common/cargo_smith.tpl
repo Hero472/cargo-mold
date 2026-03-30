@@ -1,7 +1,7 @@
 # .cargo-smith
 [project]
 name = "{{name}}"
-smith_version = "0.3.2"
+smith_version = "0.4.0"
 created_at = "{{now}}"
 
 [generated]
