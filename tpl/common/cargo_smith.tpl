@@ -1,12 +1,11 @@
 # .cargo-smith
 [project]
 name = "{{name}}"
-mold_version = "0.3.2"
+smith_version = "0.3.2"
 created_at = "{{now}}"
 
 [generated]
-resources = []
-modules = []
+features = []
 
 [metadata]
 template = "{{template_type}}"

@@ -38,7 +38,7 @@ impl<T: Serialize> ApiResponse<T> {
     }
 }
 
-impl ApiResponse<()> {
+impl<T> ApiResponse<T> where T: Serialize {
     pub fn success(message: impl Into<String>) -> Self {
         Self {
             status_code: 200,

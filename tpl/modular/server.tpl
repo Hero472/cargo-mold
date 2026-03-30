@@ -1,6 +1,5 @@
 // Server configuration and startup
 use actix_web::{App, HttpServer};
-use crate::app::app_module::configure_app;
 
 /// Starts the HTTP server and begins listening for requests
 pub async fn run() -> std::io::Result<()> {
@@ -8,7 +7,6 @@ pub async fn run() -> std::io::Result<()> {
     
     HttpServer::new(|| {
         App::new()
-            .configure(configure_app)
     })
     .bind("127.0.0.1:8080")?
     .run()

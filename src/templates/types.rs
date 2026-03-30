@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 // CargoMold
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct CargoMold {
+pub struct CargoSmith {
     pub project: Project,
     pub generated: Generated,
     pub metadata: Metadata,
@@ -12,14 +12,13 @@ pub struct CargoMold {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Project {
     pub name: String,
-    pub mold_version: String,
+    pub smith_version: String,
     pub created_at: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Generated {
-    pub resources: Vec<String>,
-    pub modules: Vec<String>,
+    pub features: Vec<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
