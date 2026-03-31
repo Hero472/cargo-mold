@@ -1,8 +1,9 @@
-use actix_web::{FromRequest, HttpRequest, HttpMessage, dev::Payload};
+use actix_web::{FromRequest, HttpRequest, dev::Payload, HttpMessage};
 use futures::future::{ready, Ready};
-use serde_json::Value;
 use std::marker::PhantomData;
+use serde_json::Value;
 use crate::auth::Claims;
+use crate::common::DefaultRoles;
 use crate::common::errors::AppError;
 use crate::common::roles::{Role, RequiredRole};
 
@@ -25,8 +26,8 @@ pub struct GuestGuard(pub Claims<Value>);
 
 pub struct RequireRole<R: Role, P: RequiredRole> {
     pub claims: Claims<Value>,
-    _role: PhantomData<R>,
-    _perm: PhantomData<P>,
+    pub role: R, 
+    _marker: PhantomData<P>,
 }
 
 // --- GuardClaims impls ---
@@ -41,63 +42,51 @@ impl<R: Role, P: RequiredRole> GuardClaims for RequireRole<R, P> {
 
 // --- FromRequest impls ---
 
-impl FromRequest for AuthGuard {
-    type Error = AppError;
-    type Future = Ready<Result<Self, Self::Error>>;
-    fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        let result = req.extensions().get::<Claims<Value>>().cloned()
-            .map(AuthGuard)
-            .ok_or(AppError::Unauthorized("missing or invalid token"));
-        ready(result)
-    }
-}
-
-impl FromRequest for RegisteredGuard {
-    type Error = AppError;
-    type Future = Ready<Result<Self, Self::Error>>;
-    fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        let result = match req.extensions().get::<Claims<Value>>().cloned() {
-            Some(c) if c.data["kind"] == "registered" => Ok(RegisteredGuard(c)),
-            Some(_) => Err(AppError::Forbidden("registered users only")),
-            None    => Err(AppError::Unauthorized("missing token")),
-        };
-        ready(result)
-    }
-}
-
-impl FromRequest for GuestGuard {
-    type Error = AppError;
-    type Future = Ready<Result<Self, Self::Error>>;
-    fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
-        let result = match req.extensions().get::<Claims<Value>>().cloned() {
-            Some(c) if c.data["kind"] == "guest" => Ok(GuestGuard(c)),
-            Some(_) => Err(AppError::Forbidden("guests only")),
-            None    => Err(AppError::Unauthorized("missing token")),
-        };
-        ready(result)
-    }
-}
-
 impl<R: Role, P: RequiredRole> FromRequest for RequireRole<R, P> {
     type Error = AppError;
     type Future = Ready<Result<Self, Self::Error>>;
+
     fn from_request(req: &HttpRequest, _: &mut Payload) -> Self::Future {
         let result = match req.extensions().get::<Claims<Value>>().cloned() {
             Some(c) => {
-                let role_matches = c.data
-                    .get("role")
-                    .and_then(|r| serde_json::from_value::<R>(r.clone()).ok())
-                    .map(|r| r.as_str() == P::ROLE)
-                    .unwrap_or(false);
+                // 1. Try to extract the "role" from the claims JSON
+                let user_role = c.data.get("role")
+                    .and_then(|v| serde_json::from_value::<R>(v.clone()).ok());
 
-                if role_matches {
-                    Ok(RequireRole { claims: c, _role: PhantomData, _perm: PhantomData })
-                } else {
-                    Err(AppError::Forbidden("insufficient role"))
+                match user_role {
+                    // 2. Compare the runtime string with the compile-time constant
+                    Some(r) if r.as_str() == P::ROLE => {
+                        Ok(RequireRole { 
+                            claims: c, 
+                            role: r, 
+                            _marker: PhantomData 
+                        })
+                    }
+                    Some(_) => Err(AppError::Forbidden("Insufficient permissions")),
+                    None => Err(AppError::Forbidden("Invalid or missing role in token")),
                 }
             }
-            None => Err(AppError::Unauthorized("missing token")),
+            None => Err(AppError::Unauthorized("Missing authentication claims")),
         };
         ready(result)
     }
 }
+
+/// Built-in alias for Admin-only access using the DefaultRole enum.
+pub type RequireAdmin = RequireRole<DefaultRoles, crate::common::roles::Admin>;
+
+/// Built-in alias for Registered User access using the DefaultRole enum.
+pub type RequireUser = RequireRole<DefaultRoles, crate::common::roles::User>;
+
+/// Built-in alias for Guest access using the DefaultRole enum.
+pub type RequireGuest = RequireRole<DefaultRoles, crate::common::roles::Guest>;
+
+#[macro_export]
+macro_rules! create_auth_aliases {
+    ($enum_ty:ty, $($marker:ty => $alias:ident),* $(,)?) => {
+        $(
+            pub type $alias = $crate::guards::RequireRole<$enum_ty, $marker>;
+        )*
+    };
+}
+

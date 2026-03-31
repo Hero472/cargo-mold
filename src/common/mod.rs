@@ -7,6 +7,6 @@ pub mod response;
 pub mod roles;
 
 pub use errors::AppError;
-pub use roles::{Role, RequiredRole, DefaultRole, Admin, User, Guest};
+pub use roles::{Role, RequiredRole, DefaultRoles, Admin, User, Guest};
 pub use guards::{AuthGuard, RegisteredGuard, GuestGuard, RequireRole, GuardClaims};
 pub use extractors::pagination::{PaginatedResponse, PaginationQuery};
