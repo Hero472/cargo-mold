@@ -74,7 +74,6 @@ async fn main() -> anyhow::Result<()> {
             }
         }
 
-        // Handle 'add' or 'g'
         Some(Commands::Add(args)) | Some(Commands::Generate(args)) => {
             match args.command {
                 AddCommands::Feature(f_args) => {
@@ -83,7 +82,6 @@ async fn main() -> anyhow::Result<()> {
             }
         }
 
-        // If no command is provided at all (e.g., just 'cargo-smith')
         None => {
             run_interactive().await?;
         }
@@ -108,7 +106,6 @@ async fn run_interactive() -> anyhow::Result<()> {
     
     match action_choice {
         0 => {
-            // FIX: Create an empty instance of NewArgs to pass into the function
             let empty_args = crate::commands::new::NewArgs {
                 project_name: None,
                 template_type: None,

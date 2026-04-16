@@ -1,7 +1,7 @@
 use mongodb::{Client, ClientSession, Collection, bson::{Bson, Document, doc}};
 use serde::{de::DeserializeOwned, Serialize};
 use futures::TryStreamExt;
-use crate::{AppError, common::{PaginatedResponse, PaginationQuery, extractors::pagination::SortDirection}};
+use crate::common::{errors::AppError, extractors::pagination::{PaginatedResponse, PaginationQuery, SortDirection}};
 
 pub trait MongoPaginationExt {
     fn to_filter(&self, searchable_fields: &[&str]) -> Document;

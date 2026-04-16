@@ -31,7 +31,7 @@ impl Config {
     {
         Self::get(key)
             .parse::<T>()
-            .expect(&format!("❌ Environment variable [{}] is not the correct type!", key))
+            .expect(&format!("Environment variable [{}] is not the correct type!", key))
     }
 
     /// Check if a variable exists (useful for feature flags)

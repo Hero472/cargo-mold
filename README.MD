@@ -79,9 +79,7 @@ Create complete CRUD APIs in seconds:
 
 ```bash
 # Generate a users resource with full CRUD operations
-cargo-smith generate resource users
-or
-cargo-smith g resource users
+cargo-smith add feature users
 
 # This creates:
 # - Model (src/models/user.rs)

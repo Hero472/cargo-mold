@@ -42,7 +42,7 @@ impl ResponseError for AppError {
         
         let status = self.status_code();
 
-        let body = ApiResponse::<()>::message(status, self.to_string());
+        let body = ApiResponse::<()>::with_status(status, self.to_string(), None);
         
         HttpResponse::build(status).json(body)
     }

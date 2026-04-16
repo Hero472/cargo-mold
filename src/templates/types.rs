@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-// CargoMold
+// CargoSmith
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct CargoSmith {

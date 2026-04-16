@@ -52,3 +52,4 @@ mongodb = "3.5.2"
 validator = { version = "0.20", features = ["derive"] }
 dotenvy = "0.15.7"
 strum = {version = "0.28.0", features = ["derive"]}
+const_format = "0.2.35"

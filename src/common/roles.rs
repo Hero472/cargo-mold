@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-use strum::{VariantNames, EnumString, VariantArray, Display, AsRefStr};
+use strum::{VariantNames, EnumString, Display, AsRefStr};
 use std::fmt::Debug;
 
 pub trait Role: 
@@ -44,12 +44,46 @@ impl RequiredRole for Guest {
 }
 
 #[macro_export]
+macro_rules! ascii_lowercase {
+    ($s:expr) => {{
+        const INPUT: &str = $s;
+        const OUTPUT: &str = {
+            const fn lower_byte(b: u8) -> u8 {
+                if b.is_ascii_uppercase() { b + 32 } else { b }
+            }
+
+            const fn convert<const N: usize>(input: &[u8]) -> [u8; N] {
+                let mut out = [0; N];
+                let mut i = 0;
+                while i < N {
+                    // SAFETY: The slice is guaranteed to have length N.
+                    out[i] = lower_byte(unsafe { *input.as_ptr().add(i) });
+                    i += 1;
+                }
+                out
+            }
+
+            // Store the array in an associated constant to give it 'static lifetime.
+            struct Helper<const N: usize>;
+            impl<const N: usize> Helper<N> {
+                const ARRAY: [u8; N] = convert::<N>(INPUT.as_bytes());
+            }
+
+            // SAFETY: We only modified ASCII uppercase letters, so output is valid UTF-8.
+            // The reference to Helper::ARRAY is truly 'static.
+            unsafe { std::str::from_utf8_unchecked(&Helper::<{ INPUT.len() }>::ARRAY) }
+        };
+        OUTPUT
+    }};
+}
+
+#[macro_export]
 macro_rules! define_custom_roles {
     ($name:ident { $($variant:ident => $marker:ident),* $(,)? }) => {
         #[derive(
-            Debug, Clone, Copy, PartialEq, Eq, 
-            serde::Serialize, serde::Deserialize, 
-            strum::EnumString, strum::VariantNames, strum::Display
+            Debug, Clone, Copy, PartialEq, Eq,
+            serde::Serialize, serde::Deserialize,
+            strum::EnumString, strum::VariantNames, strum::Display, strum::AsRefStr
         )]
         #[serde(rename_all = "lowercase")]
         #[strum(serialize_all = "lowercase")]
@@ -57,24 +91,19 @@ macro_rules! define_custom_roles {
             $($variant),*
         }
 
-        impl $crate::Role for $name {
+        impl $crate::common::roles::Role for $name {
             fn as_str(&self) -> &str {
-                use strum::VariantNames;
-                <$name as VariantNames>::VARIANTS[*self as usize]
+                self.as_ref()
             }
         }
 
-        // We use a counter to map the Marker to the correct index in VARIANTS
-        const _: () = {
-            let mut i = 0;
-            $(
-                pub struct $marker;
-                impl $crate::common::roles::RequiredRole for $marker {
-                    // This pulls the lowercase string directly from strum's metadata
-                    const ROLE: &'static str = <$name as strum::VariantNames>::VARIANTS[i];
-                }
-                i += 1;
-            )*
-        };
+        $(
+            pub struct $marker;
+            impl $crate::common::roles::RequiredRole for $marker {
+                const ROLE: &'static str = $crate::ascii_lowercase!(
+                    <$name as strum::VariantNames>::VARIANTS[$name::$variant as usize]
+                );
+            }
+        )*
     };
 }

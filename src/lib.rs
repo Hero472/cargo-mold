@@ -1,14 +1,31 @@
-pub mod commands;
-pub mod templates;
-pub mod auth;
-pub mod utils;
-pub mod database;
-pub mod common;
-pub mod config;
+pub(crate) mod commands;
+pub(crate) mod templates;
+pub(crate) mod auth;
+pub(crate) mod utils;
+pub(crate) mod database;
+pub(crate) mod common;
+pub(crate) mod config;
 
-pub use auth::{AuthService, Claims};
-pub use common::middleware::{JwtMiddleware, ApiInterceptor};
-pub use database::{Db, MongoCollection};
+// Auth & JWT
+pub use auth::auth::AuthService;
+pub use auth::claims::Claims;
+pub use common::middleware::jwt::JwtMiddleware;
+pub use common::middleware::interceptor::ApiInterceptor;
 
+// Database
+pub use database::mongo::{Db, MongoCollection};
+
+// Errors & Responses
 pub use common::errors::AppError;
-pub use common::guards::{AuthGuard, RegisteredGuard};
+pub use common::response::ApiResponse;
+
+// Guards & Roles
+pub use common::guards::{AuthGuard, GuardClaims};
+pub use common::guards::{RequireAdmin, RequireAnyRole, RequireAuth, RequireGuest, RequireUser, HasRole, AnyOf};
+pub use common::roles::{Admin, User, Guest, DefaultRoles};
+
+// Pagination
+pub use common::extractors::pagination::{PaginatedResponse, PaginationQuery};
+
+// Config
+pub use config::Config;
